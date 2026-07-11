@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-paper text-ink font-body;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-display;
+  }
+}
+
+/* Signature motif: a hairline "tape measure" divider with tick marks,
+   used to separate sections throughout the app. */
+.tape-rule {
+  position: relative;
+  height: 1px;
+  background: repeating-linear-gradient(
+    to right,
+    #d8d3c7 0,
+    #d8d3c7 1px,
+    transparent 1px,
+    transparent 8px
+  );
+}
+
+.tape-rule::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to right,
+    #b8860b 0,
+    #b8860b 1px,
+    transparent 1px,
+    transparent 40px
+  );
+  opacity: 0.5;
+}
+
+.card {
+  @apply bg-white/60 border border-rule rounded-sm;
+}
+
+::selection {
+  background: #2f6f6233;
+}
