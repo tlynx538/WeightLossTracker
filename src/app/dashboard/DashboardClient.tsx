@@ -33,22 +33,30 @@ export default function DashboardClient({
     const {
       data: { user },
     } = await supabase.auth.getUser();
+
     if (!user) throw new Error("Not signed in.");
 
     const { data, error } = await supabase
       .from("entries")
-      .insert({ ...newEntry, user_id: user.id })
+      .insert({
+        ...newEntry,
+        user_id: user.id,
+      })
       .select()
       .single();
 
     if (error) throw new Error(error.message);
+
     setEntries((prev) => [...prev, data as Entry]);
   }
 
   async function handleDeleteEntry(id: string) {
     const previous = entries;
+
     setEntries((prev) => prev.filter((e) => e.id !== id));
+
     const { error } = await supabase.from("entries").delete().eq("id", id);
+
     if (error) {
       setEntries(previous);
     }
@@ -58,11 +66,14 @@ export default function DashboardClient({
     const {
       data: { user },
     } = await supabase.auth.getUser();
+
     if (!user) return;
 
     await supabase
       .from("profiles")
-      .update({ goal_weight_kg: value })
+      .update({
+        goal_weight_kg: value,
+      })
       .eq("id", user.id);
 
     setGoalWeightKg(value);
@@ -75,20 +86,26 @@ export default function DashboardClient({
   }
 
   return (
-    <main className="min-h-screen max-w-4xl mx-auto px-6 py-10">
-      <header className="flex items-start justify-between mb-6">
+    <main className="min-h-screen max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+      {/* Header */}
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-6">
         <div>
           <p className="font-mono text-xs tracking-widest text-pine uppercase mb-1">
             Logbook
           </p>
+
           <h1 className="text-2xl font-bold text-ink">
             {displayName ? `${displayName}'s log` : "Your log"}
           </h1>
-          <p className="text-xs text-ink/50 mt-1">{userEmail}</p>
+
+          <p className="text-xs text-ink/50 mt-1 break-all">
+            {userEmail}
+          </p>
         </div>
+
         <button
           onClick={handleLogout}
-          className="text-xs font-mono text-ink/50 hover:text-rust border border-rule rounded-sm px-3 py-1.5"
+          className="w-full sm:w-auto text-xs font-mono text-ink/50 hover:text-rust border border-rule rounded-sm px-4 py-2"
         >
           Sign out
         </button>
@@ -96,28 +113,82 @@ export default function DashboardClient({
 
       <div className="tape-rule mb-6" />
 
-      <div className="mb-6">
-        <StatCards entries={entries} goalWeightKg={goalWeightKg} />
-        <div className="mt-3">
-          <GoalWeight goalWeightKg={goalWeightKg} onSave={handleSaveGoal} />
+      {/* Stats */}
+      <section className="mb-6">
+        <StatCards
+          entries={entries}
+          goalWeightKg={goalWeightKg}
+        />
+
+        <div className="mt-4">
+          <GoalWeight
+            goalWeightKg={goalWeightKg}
+            onSave={handleSaveGoal}
+          />
         </div>
-      </div>
+      </section>
 
-      <div className="grid md:grid-cols-2 gap-4 mb-8">
-        <TrendChart entries={entries} dataKey="weight_kg" label="Weight" unit="kg" color="#2F6F62" />
-        <TrendChart entries={entries} dataKey="waist_cm" label="Waist" unit="cm" color="#B8860B" />
-        <TrendChart entries={entries} dataKey="hip_cm" label="Hip" unit="cm" color="#B5453C" />
-        <TrendChart entries={entries} dataKey="chest_cm" label="Chest" unit="cm" color="#1F4A41" />
-      </div>
+      {/* Mobile-first entry form */}
+      <section className="mb-8 md:hidden">
+        <EntryForm onSubmit={handleAddEntry} />
+      </section>
 
-      <div className="grid md:grid-cols-3 gap-6">
+      {/* Charts */}
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        <TrendChart
+          entries={entries}
+          dataKey="weight_kg"
+          label="Weight"
+          unit="kg"
+          color="#2F6F62"
+        />
+
+        <TrendChart
+          entries={entries}
+          dataKey="waist_cm"
+          label="Waist"
+          unit="cm"
+          color="#B8860B"
+        />
+
+        <TrendChart
+          entries={entries}
+          dataKey="hip_cm"
+          label="Hip"
+          unit="cm"
+          color="#B5453C"
+        />
+
+        <TrendChart
+          entries={entries}
+          dataKey="chest_cm"
+          label="Chest"
+          unit="cm"
+          color="#1F4A41"
+        />
+      </section>
+
+      {/* Desktop layout */}
+      <section className="hidden md:grid md:grid-cols-3 gap-6">
         <div className="md:col-span-1">
           <EntryForm onSubmit={handleAddEntry} />
         </div>
+
         <div className="md:col-span-2">
-          <EntryTable entries={entries} onDelete={handleDeleteEntry} />
+          <EntryTable
+            entries={entries}
+            onDelete={handleDeleteEntry}
+          />
         </div>
-      </div>
+      </section>
+
+      {/* Mobile history */}
+      <section className="md:hidden">
+        <EntryTable
+          entries={entries}
+          onDelete={handleDeleteEntry}
+        />
+      </section>
     </main>
   );
 }

@@ -1,9 +1,10 @@
-import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import type { CookieOptions } from "@supabase/ssr";
 
 export async function updateSession(request: NextRequest) {
-  let response = NextResponse.next({
-    request: { headers: request.headers },
+  let supabaseResponse = NextResponse.next({
+    request,
   });
 
   const supabase = createServerClient(
@@ -11,27 +12,32 @@ export async function updateSession(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return request.cookies.get(name)?.value;
+        getAll() {
+          return request.cookies.getAll();
         },
-        set(name: string, value: string, options: CookieOptions) {
-          request.cookies.set({ name, value, ...options });
-          response = NextResponse.next({ request: { headers: request.headers } });
-          response.cookies.set({ name, value, ...options });
-        },
-        remove(name: string, options: CookieOptions) {
-          request.cookies.set({ name, value: "", ...options });
-          response = NextResponse.next({ request: { headers: request.headers } });
-          response.cookies.set({ name, value: "", ...options });
+        setAll(cookiesToSet: { name: string; value: string; options?: CookieOptions }[]) {
+          // Update cookies on the request (for this execution context)
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          );
+
+          // Create fresh response with updated cookies
+          supabaseResponse = NextResponse.next({
+            request,
+          });
+
+          // Set cookies on the response sent to the browser
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          );
         },
       },
     }
   );
 
-  // Refresh session if expired — required for Server Components.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Refresh session if expired
+  const { data } = await supabase.auth.getClaims();
+  const user = data?.claims ?? null;
 
   const isAuthRoute =
     request.nextUrl.pathname.startsWith("/login") ||
@@ -49,5 +55,5 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  return response;
+  return supabaseResponse;
 }
