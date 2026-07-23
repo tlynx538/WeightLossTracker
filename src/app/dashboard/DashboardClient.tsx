@@ -199,7 +199,7 @@ export default function DashboardClient({
     if (!user) throw new Error("Not signed in.");
 
     const existing = dailyLogs.find((l) => l.log_date === newLog.log_date);
-    let result;
+    let result: DailyLog | undefined; // Explicitly typed
     if (existing) {
       const { data, error } = await supabase
         .from("daily_logs")
@@ -209,7 +209,7 @@ export default function DashboardClient({
         .single();
       if (error) throw new Error(error.message);
       result = data as DailyLog;
-      setDailyLogs((prev) => prev.map((l) => (l.id === existing.id ? result : l)));
+      setDailyLogs((prev) => prev.map((l) => (l.id === existing.id ? result! : l)));
     } else {
       const { data, error } = await supabase
         .from("daily_logs")
@@ -218,7 +218,7 @@ export default function DashboardClient({
         .single();
       if (error) throw new Error(error.message);
       result = data as DailyLog;
-      setDailyLogs((prev) => [...prev, result]);
+      setDailyLogs((prev) => [...prev, result!]);
     }
     setShowLogModal(false);
   }
@@ -286,7 +286,7 @@ export default function DashboardClient({
         <GoalWeight goalWeightKg={goalWeightKg} onSave={handleSaveGoal} />
       </section>
 
-      {/* 3. Goal Progress (new) */}
+      {/* 3. Goal Progress */}
       <section className="space-y-4">
         <h2 className="text-lg font-bold text-ink">Goal Progress</h2>
         <GoalProgress

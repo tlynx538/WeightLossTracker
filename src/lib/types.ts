@@ -1,4 +1,6 @@
 // lib/types.ts
+
+// --- Entry: body metrics logged weekly ---
 export interface Entry {
   id: string;
   user_id: string;
@@ -7,7 +9,6 @@ export interface Entry {
   waist_cm: number | null;
   hip_cm: number | null;
   chest_cm: number | null;
-  // New metrics
   neck_cm: number | null;
   right_upper_arm_cm: number | null;
   right_thigh_cm: number | null;
@@ -18,35 +19,29 @@ export interface Entry {
   photo_back: string | null;
   notes: string | null;
   created_at: string;
-  goal_weight_kg: number | null;
-  height_cm: number | null;
-  age: number | null;
 }
 
 export type NewEntry = Omit<Entry, 'id' | 'user_id' | 'created_at'>;
 
+// --- Daily Log: daily health habits ---
 export interface DailyLog {
   id: string;
   user_id: string;
   log_date: string;
-  // Sleep
   sleep_hours: number | null;
   sleep_quality: number | null;
   bedtime: string | null;
   wake_time: string | null;
-  // Hydration, mood, energy, stress, focus
   water_l: number | null;
   mood: number | null;
   energy: number | null;
   stress: number | null;
   focus: number | null;
-  // Digestion
   digestion_rating: number | null;
   constipation: boolean;
   diarrhea: boolean;
   bloating: boolean;
   acid_reflux: boolean;
-  // Nutrition
   breakfast: string | null;
   lunch: string | null;
   dinner: string | null;
@@ -55,14 +50,12 @@ export interface DailyLog {
   protein_target_met: boolean;
   fruit_servings: number | null;
   veg_servings: number | null;
-  // Training
   workout_today: boolean;
   workout_type: string | null;
   workout_duration_min: number | null;
   cardio_duration_min: number | null;
   steps: number | null;
   pain_today: number | null;
-  // Habits
   habit_protein_breakfast: boolean;
   habit_meal_prepped: boolean;
   habit_water_goal: boolean;
@@ -76,7 +69,17 @@ export interface DailyLog {
 
 export type NewDailyLog = Omit<DailyLog, 'id' | 'user_id' | 'created_at' | 'updated_at'>;
 
-// Habit fields for checklist
+// --- Profile: user settings and goals ---
+export interface Profile {
+  id: string;
+  display_name: string | null;
+  goal_weight_kg: number | null;
+  height_cm: number | null;
+  age: number | null;
+  // ... other profile fields if any
+}
+
+// --- Habit fields ---
 export const HABIT_FIELDS = [
   'habit_protein_breakfast',
   'habit_meal_prepped',
@@ -97,12 +100,12 @@ export const HABIT_LABELS: Record<HabitField, string> = {
   habit_logged_food: 'Logged today’s food',
 };
 
-// Health System Score weights
+// --- Health System Score weights ---
 export const HEALTH_WEIGHTS = {
   habit_meal_prepped: 0.25,
   protein_target_met: 0.20,
   habit_workout: 0.20,
-  sleep_adequate: 0.15, // computed from sleep_hours >= 7
-  water_goal: 0.10,     // computed from water_l >= 2 (example)
+  sleep_adequate: 0.15,
+  water_goal: 0.10,
   habit_logged_food: 0.10,
 } as const;
