@@ -13,13 +13,18 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const [{ data: entries }, { data: profile }] = await Promise.all([
+  const [{ data: entries }, { data: profile }, { data: dailyLogs }] = await Promise.all([
     supabase
       .from("entries")
       .select("*")
       .eq("user_id", user.id)
       .order("entry_date", { ascending: true }),
     supabase.from("profiles").select("*").eq("id", user.id).single(),
+    supabase
+      .from("daily_logs")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("log_date", { ascending: true }),
   ]);
 
   return (
@@ -28,6 +33,9 @@ export default async function DashboardPage() {
       displayName={profile?.display_name ?? null}
       goalWeightKg={profile?.goal_weight_kg ?? null}
       initialEntries={entries ?? []}
+      initialDailyLogs={dailyLogs ?? []}
+      heightCm={profile?.height_cm ?? null}
+      age={profile?.age ?? null}
     />
   );
 }
